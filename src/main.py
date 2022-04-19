@@ -23,19 +23,24 @@ TRAINING_DATA_FILE = 'output.csv'
 #     5.3f
 # ]
 
-def encode(elem, collection):
-    out = torch.zeros(len(collection), dtype=torch.int8)
-    index = collection.index(elem)
-    if index == -1:
-        raise Exception(f"Invalid element {elem}")
-    out[index] = 1
+
+def encode(elem, collection=None, final_dim=None):
+    out = torch.zeros(len(collection) if final_dim is None else final_dim, dtype=torch.int16)
+    if collection is None:
+        out[0] = elem
+    else:
+        index = collection.index(elem)
+        if index == -1:
+            raise Exception(f"Invalid element {elem}")
+        out[index] = 1
     return out
 
 
-def get_training_data():
-    training_data = []
+def read_training_data():
+    training_input_data = torch.tensor([])
+    training_output_data = torch.tensor([])
     with open('output.csv', 'r') as file:
-        file.readline() # skip first line
+        file.readline()  # skip first line
 
         while True:
             line = file.readline()
@@ -45,23 +50,25 @@ def get_training_data():
             line = line.replace('\"', '')
             record = line.split(',')
 
-            country = encode(record[0], COUNTRIES)
-            month = encode(record[1], MONTHS)
+            country = encode(record[0], COUNTRIES, final_dim=12)
+            month = encode(record[1], MONTHS, final_dim=12)
 
             for entry in range(2, len(record)):
                 if record[entry] == "":
                     continue
-                training_data.append({
-                    "country": country,
-                    "month": month,
-                    "year": 1961 + entry - 2,
-                    "temperature change": record[entry]
-                })
+                year = encode(1961 + entry - 2, final_dim=12)
+                ts = torch.stack((
+                    country,
+                    month,
+                    year
+                ))
+                training_input_data = torch.cat((training_input_data, ts))
+                training_output_data = torch.cat((training_output_data, torch.tensor(float(record[entry]))))
 
-    return training_data
+    return training_input_data
 
 if __name__ == "__main__":
-    data = get_training_data()
+    data = read_training_data()
 
     print(data)
     # model = TemperatureModel(HIDDEN_DIM, NUM_LAYERS).cuda()
