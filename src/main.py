@@ -16,7 +16,7 @@ TRAINING_DATA_FILE = 'output.csv'
 # [
 #     [0, 0, 1, 0, 0, 0] - Ukraine
 #     [0, 1, 0, ...0, 0] - Feb
-#     1984
+#     [1984, 0, 0, 0...]
 # ]
 #
 # [
@@ -37,8 +37,8 @@ def encode(elem, collection=None, final_dim=None):
 
 
 def read_training_data():
-    training_input_data = torch.tensor([])
-    training_output_data = torch.tensor([])
+    training_input_data = None
+    training_output_data = None
     with open('output.csv', 'r') as file:
         file.readline()  # skip first line
 
@@ -62,10 +62,17 @@ def read_training_data():
                     month,
                     year
                 ))
-                training_input_data = torch.cat((training_input_data, ts))
-                training_output_data = torch.cat((training_output_data, torch.tensor(float(record[entry]))))
+                ts = torch.reshape(ts, (-1, 3, 12))
+                if training_input_data is None:
+                    training_input_data = ts
+                else:
+                    training_input_data = torch.cat((training_input_data, ts))
+                if training_output_data is None:
+                    training_output_data = torch.tensor([float(record[entry])])
+                else:
+                    training_output_data = torch.cat((training_output_data, torch.tensor([float(record[entry])])))
 
-    return training_input_data
+    return training_input_data, training_output_data
 
 if __name__ == "__main__":
     data = read_training_data()
