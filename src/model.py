@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-INPUT_DIM = 2
+INPUT_DIM = 12
 OUTPUT_DIM = 1
 
 class TemperatureModel(nn.Module):
@@ -22,12 +22,15 @@ class TemperatureModel(nn.Module):
         # Output layer
         self.out = nn.Linear(hidden_dim, OUTPUT_DIM)
 
+        # Activation
+        self.sig = nn.Sigmoid()
+
 
     def forward(self, x):
         res = self.hidden_layers[0](x)
 
         for layer_num in range(self.num_layers - 1):
             res = self.hidden_layers[layer_num + 1](res)
-            res = nn.Sigmoid(res)
+            res = self.sig(res)
 
         return self.out(res)
