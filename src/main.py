@@ -2,16 +2,18 @@ from src.model import TemperatureModel
 import torch.nn as nn
 import torch
 
-from src.preprocessing import COUNTRIES, MONTHS
+from src.util import read_training_data, normalize_temp, denormalize_temp
 
-HIDDEN_DIM = 10
-NUM_LAYERS = 3
+HIDDEN_DIM = 64
+NUM_LAYERS = 5
 
 NUM_EPOCHS = 200
 BATCH_SIZE = 40
-LEARNING_RATE = 5e-5
+LEARNING_RATE = 3e-3
 
 TRAINING_DATA_FILE = 'output.csv'
+
+[0.15, 0.67, 0.55]
 
 # [
 #     [0, 0, 1, 0, 0, 0] - Ukraine
@@ -24,62 +26,11 @@ TRAINING_DATA_FILE = 'output.csv'
 # ]
 
 
-def encode(elem, collection=None, final_dim=None):
-    out = torch.zeros(len(collection) if final_dim is None else final_dim, dtype=torch.float)
-    if collection is None:
-        out[0] = elem
-    else:
-        index = collection.index(elem)
-        if index == -1:
-            raise Exception(f"Invalid element {elem}")
-        out[index] = 1
-    return out
-
-
-def read_training_data():
-    training_input_data = None
-    training_output_data = None
-    with open('output.csv', 'r') as file:
-        file.readline()  # skip first line
-
-        while True:
-            line = file.readline()
-            if not line:
-                break
-
-            line = line.replace('\"', '')
-            record = line.split(',')
-
-            country = encode(record[0], COUNTRIES, final_dim=12)
-            month = encode(record[1], MONTHS, final_dim=12)
-
-            for entry in range(2, len(record)):
-                if record[entry] == "":
-                    continue
-                year = encode(1961 + entry - 2, final_dim=12)
-                ts = torch.stack((
-                    country,
-                    month,
-                    year
-                ))
-                ts = torch.reshape(ts, (-1, 3, 12))
-                if training_input_data is None:
-                    training_input_data = ts
-                else:
-                    training_input_data = torch.cat((training_input_data, ts))
-                if training_output_data is None:
-                    training_output_data = torch.tensor([float(record[entry])])
-                else:
-                    training_output_data = torch.cat((training_output_data, torch.tensor([float(record[entry])])))
-
-    return training_input_data, training_output_data
-
-
 if __name__ == "__main__":
-    data = read_training_data()
+    inputs, expected_outputs, min_temp, max_temp = read_training_data()
 
-    inputs = data[0]
-    expected_outputs = data[1]
+    expected_outputs = normalize_temp(expected_outputs, min_temp, max_temp)
+
     model = TemperatureModel(HIDDEN_DIM, NUM_LAYERS)
     # model = model.cuda()
 
