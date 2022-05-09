@@ -1,5 +1,5 @@
 REMOVED_COLUMNS = [0, 2, 4, 5, 6]
-COUNTRIES = ['Romania', 'Republic of Moldova', 'Ukraine', 'Serbia', 'Bulgaria', 'Hungary']
+COUNTRIES = ['Romania']
 MONTHS = ['January', 'February', 'March', 'April', "May", "June", "July", "August", "September", "October", "November",
           "December"]
 

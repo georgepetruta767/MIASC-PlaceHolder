@@ -1,6 +1,12 @@
 import torch
+import numpy as np
 
 from src.preprocessing import COUNTRIES, MONTHS
+
+
+def my_funct(x_input):
+    y = 0.5 * x_input ** 2 + np.cos(x_input) - 10 * np.sin(5 * x_input) - 0.1 * x_input ** 3 + x_input + 100
+    return y
 
 
 def normalize_year(year):
@@ -48,7 +54,6 @@ def read_training_data():
             line = line.replace('\"', '')
             record = line.split(',')
 
-            country = encode(record[0], COUNTRIES)
             month_offset = MONTHS.index(record[1]) / 12
 
             for entry in range(2, len(record)):
@@ -61,8 +66,7 @@ def read_training_data():
                 # + month_offset (values equally spaced in [0, 1) to represent months)
                 year_month = entry - 2 + month_offset
 
-                year = torch.tensor([year_month])
-                ts = torch.cat((country, year)).reshape(1, -1)
+                ts = torch.tensor([year_month])
                 if training_input_data is None:
                     training_input_data = ts
                 else:
@@ -75,4 +79,4 @@ def read_training_data():
     min_temp = torch.min(training_output_data)
     max_temp = torch.max(training_output_data)
 
-    return training_input_data, training_output_data, min_temp, max_temp
+    return training_input_data.reshape(-1, 1), training_output_data, min_temp, max_temp

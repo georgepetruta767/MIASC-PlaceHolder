@@ -1,19 +1,26 @@
 from src.model import TemperatureModel
 import torch.nn as nn
 import torch
+import numpy
+import torch.utils.data as data_utils
 
-from src.util import read_training_data, normalize_temp
+from src.util import read_training_data, normalize_temp, my_funct
 
 NUM_EPOCHS = 200
-BATCH_SIZE = 100
+BATCH_SIZE = 32
 LEARNING_RATE = 1e-3
 
 if __name__ == "__main__":
-    inputs, expected_outputs, min_temp, max_temp = read_training_data()
+    # inputs, expected_outputs, min_temp, max_temp = read_training_data()
+    x_train = numpy.random.uniform(low=-10, high=10, size=700)
+    y_train = my_funct(x_train)
 
-    expected_outputs = normalize_temp(expected_outputs, min_temp, max_temp)
+    inputs = torch.from_numpy(x_train.reshape(-1, 1)).float().cuda()
+    expected_outputs = torch.from_numpy(y_train.reshape(-1, 1)).float().cuda()
 
-    model = TemperatureModel()
+    # expected_outputs = normalize_temp(expected_outputs, min_temp, max_temp)
+
+    model = TemperatureModel().cuda()
 
     error = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters())
@@ -22,10 +29,13 @@ if __name__ == "__main__":
     batch_count = inputs.size()[0] // BATCH_SIZE
 
     for epoch in range(NUM_EPOCHS):
+        perm = numpy.random.permutation(inputs.size()[0])
+        shuffled_input = inputs[perm]
+        shuffled_output = expected_outputs[perm]
         epoch_losses = []
         for batch_num in range(batch_count):
-            input = inputs[batch_num * BATCH_SIZE: (batch_num + 1) * BATCH_SIZE]
-            expected_output = expected_outputs[batch_num * BATCH_SIZE: (batch_num + 1) * BATCH_SIZE]
+            input = shuffled_input[batch_num * BATCH_SIZE: (batch_num + 1) * BATCH_SIZE]
+            expected_output = shuffled_output[batch_num * BATCH_SIZE: (batch_num + 1) * BATCH_SIZE]
 
             optimizer.zero_grad()
 
