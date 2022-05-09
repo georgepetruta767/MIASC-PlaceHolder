@@ -49,13 +49,20 @@ def read_training_data():
             record = line.split(',')
 
             country = encode(record[0], COUNTRIES)
-            month = encode(record[1], MONTHS)
+            month_offset = MONTHS.index(record[1]) / 12
 
             for entry in range(2, len(record)):
                 if record[entry] == "":
                     continue
-                year = torch.tensor([normalize_year(1961 + entry - 2)])
-                ts = torch.cat((country, month, year)).reshape(1, -1)
+                # 1961 (base year)
+                # + entry (column offset)
+                # - 2 (ignore first two columns: country and month)
+                # - 1961 (for normalization)
+                # + month_offset (values equally spaced in [0, 1) to represent months)
+                year_month = entry - 2 + month_offset
+
+                year = torch.tensor([year_month])
+                ts = torch.cat((country, year)).reshape(1, -1)
                 if training_input_data is None:
                     training_input_data = ts
                 else:

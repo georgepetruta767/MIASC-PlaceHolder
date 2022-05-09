@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-INPUT_DIM = 17
+INPUT_DIM = 6
 OUTPUT_DIM = 1
 
 D1 = 80
@@ -11,7 +11,7 @@ D5 = 40
 D6 = 20
 
 class TemperatureModel(nn.Module):
-    def __init__(self, hidden_dim, num_layers):
+    def __init__(self):
         super(TemperatureModel, self).__init__()
 
         self.hidden = nn.Sequential(

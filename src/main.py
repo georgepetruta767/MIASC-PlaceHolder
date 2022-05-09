@@ -4,9 +4,6 @@ import torch
 
 from src.util import read_training_data, normalize_temp
 
-HIDDEN_DIM = 1
-NUM_LAYERS = 1
-
 NUM_EPOCHS = 200
 BATCH_SIZE = 100
 LEARNING_RATE = 1e-3
@@ -16,10 +13,10 @@ if __name__ == "__main__":
 
     expected_outputs = normalize_temp(expected_outputs, min_temp, max_temp)
 
-    model = TemperatureModel(HIDDEN_DIM, NUM_LAYERS)
+    model = TemperatureModel()
 
     error = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters())#, lr=LEARNING_RATE, momentum=0.8)
+    optimizer = torch.optim.Adam(model.parameters())
     model.train()
 
     batch_count = inputs.size()[0] // BATCH_SIZE
@@ -39,8 +36,11 @@ if __name__ == "__main__":
             optimizer.step()
 
             epoch_losses.append(loss.item())
-            print(f'Epoch: {epoch} Batch: {batch_num}/{batch_count} Loss: {loss.item()}')
-        checkpoint_name = f'epoch{epoch}_batchSize{BATCH_SIZE}_hiddenDim{HIDDEN_DIM}_numLayers{NUM_LAYERS}'
+        mean_loss = torch.mean(torch.Tensor(epoch_losses))
+
+        checkpoint_name = f'epoch{epoch}_batchSize{BATCH_SIZE}'
         with open('losses.txt', 'a') as f:
-            f.write(f'Model: {checkpoint_name} - LOSS: {torch.mean(torch.Tensor(epoch_losses))}\n')
+            f.write(f'Model: {checkpoint_name} - LOSS: {mean_loss}\n')
+        print(f'Epoch: {epoch} Loss: {mean_loss.item()}')
+
         torch.save(model.state_dict(), f'..\\saved_models\\{checkpoint_name}.pt')
