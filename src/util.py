@@ -4,7 +4,7 @@ from src.preprocessing import COUNTRIES, MONTHS
 
 
 def normalize_year(year):
-    return (year - 1960) / (2020 - 1960)
+    return (year - 1961) / (2020 - 1961)
 
 
 def normalize_temp(temp, min_temp, max_temp):
@@ -15,14 +15,21 @@ def denormalize_temp(temp, min_temp, max_temp):
     return temp * (max_temp - min_temp) + min_temp
 
 
-def encode(elem, collection=None, final_dim=None):
-    out = torch.zeros(len(collection) if final_dim is None else final_dim, dtype=torch.float)
-    if collection is None:
-        out[0] = elem
-    else:
-        index = collection.index(elem)
-        if index == -1:
-            raise Exception(f"Invalid element {elem}")
+def normalize(elem, collection):
+    index = collection.index(elem)
+    if index == -1:
+        raise Exception(f"Invalid element {elem}")
+    max_index = len(collection) - 1
+
+    return index / max_index
+
+
+def encode(elem, collection):
+    out = torch.zeros(len(collection) - 1, dtype=torch.float)
+    index = collection.index(elem)
+    if index == -1:
+        raise Exception(f"Invalid element {elem}")
+    elif index != len(collection) - 1:
         out[index] = 1
     return out
 
@@ -41,19 +48,14 @@ def read_training_data():
             line = line.replace('\"', '')
             record = line.split(',')
 
-            country = encode(record[0], COUNTRIES, final_dim=12)
-            month = encode(record[1], MONTHS, final_dim=12)
+            country = encode(record[0], COUNTRIES)
+            month = encode(record[1], MONTHS)
 
             for entry in range(2, len(record)):
                 if record[entry] == "":
                     continue
-                year = encode(normalize_year(1961 + entry - 2), final_dim=12)
-                ts = torch.stack((
-                    country,
-                    month,
-                    year
-                ))
-                ts = torch.reshape(ts, (-1, 3, 12))
+                year = torch.tensor([normalize_year(1961 + entry - 2)])
+                ts = torch.cat((country, month, year)).reshape(1, -1)
                 if training_input_data is None:
                     training_input_data = ts
                 else:
