@@ -4,21 +4,16 @@ import torch
 import numpy
 import torch.utils.data as data_utils
 
-from src.util import read_training_data, normalize_temp, my_funct
+from src.util import read_training_data
 
 NUM_EPOCHS = 200
 BATCH_SIZE = 32
 LEARNING_RATE = 1e-3
 
 if __name__ == "__main__":
-    # inputs, expected_outputs, min_temp, max_temp = read_training_data()
-    x_train = numpy.random.uniform(low=-10, high=10, size=700)
-    y_train = my_funct(x_train)
-
-    inputs = torch.from_numpy(x_train.reshape(-1, 1)).float().cuda()
-    expected_outputs = torch.from_numpy(y_train.reshape(-1, 1)).float().cuda()
-
-    # expected_outputs = normalize_temp(expected_outputs, min_temp, max_temp)
+    inputs, expected_outputs = read_training_data()
+    inputs = inputs.cuda()
+    expected_outputs = expected_outputs.cuda().reshape(-1, 1)
 
     model = TemperatureModel().cuda()
 

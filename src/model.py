@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-INPUT_DIM = 1
+INPUT_DIM = 3
 OUTPUT_DIM = 1
 
 D1 = 80

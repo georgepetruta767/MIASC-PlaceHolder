@@ -1,10 +1,8 @@
-import numpy
 import torch
 import matplotlib.pyplot as plt
 
 from src.model import TemperatureModel
-from src.preprocessing import COUNTRIES
-from src.util import read_training_data, denormalize_temp, my_funct
+from src.util import read_training_data
 
 BATCH_SIZE = 32
 
@@ -24,26 +22,30 @@ def load_models(epochs):
 if __name__ == '__main__':
     # epochs = [0, 25, 50, 75, 100, 200, 300, 500, 700, 900]
     # epochs = [0, 25, 50, 75, 100, 125, 150, 175, 199]
-    epochs = [199]
+    epochs = [86]
     legend = ['actual data'] + [f'{epoch} epochs' for epoch in epochs]
     models = load_models(epochs)
 
-    # inputs, expected_outputs, min_temp, max_temp = read_training_data()
-    x_train = numpy.random.uniform(low=-10, high=10, size=1000)
-    x_train.sort()
-    y_train = my_funct(x_train)
+    inputs, expected_outputs = read_training_data()
+    filtered_in, filtered_out = [], []
 
-    inputs = torch.from_numpy(x_train.reshape(-1, 1)).float()
-    expected_outputs = torch.from_numpy(y_train.reshape(-1, 1)).float()
+    for index in range(inputs.size()[0]):
+        entry = inputs[index]
+        if entry[0] == 1970:
+            filtered_in.append(entry)
+            filtered_out.append(expected_outputs[index])
 
-    # years = torch.linspace(1961, 2019, inputs.size()[0])
-    # years = range(1961, 2020)
-    plt.plot(x_train, expected_outputs)
+    filtered_in = torch.stack(filtered_in)
+    filtered_out = torch.stack(filtered_out)
+
+    x_axis = torch.linspace(1, 12, filtered_in.size()[0])
+
+    plt.plot(x_axis, filtered_out)
 
     for model in models:
-        output = model(inputs).detach()
+        output = model(filtered_in).detach()
         # output = denormalize_temp(output, min_temp, max_temp)
-        plt.plot(x_train, output)
+        plt.plot(x_axis, output)
 
     plt.legend(legend)
     plt.show()

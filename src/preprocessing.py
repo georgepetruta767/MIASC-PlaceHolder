@@ -1,62 +1,52 @@
-REMOVED_COLUMNS = [0, 2, 4, 5, 6]
-COUNTRIES = ['Romania']
-MONTHS = ['January', 'February', 'March', 'April', "May", "June", "July", "August", "September", "October", "November",
-          "December"]
+REMOVED_COLUMNS = [0, 1, 2, 3, 8]
 
 
 def processData():
     processedRecords = []
-    header = []
-    with open('../Environment_Temperature_change_E_All_Data_NOFLAG.csv', 'r') as file:
-        header = file.readline().split(",")
-        header = removeColumns(header, REMOVED_COLUMNS)
+    header = None
+    for year in range(1961, 2016):
+        with open(f'../temps/climrbsn{year}.csv', 'r') as file:
+            if header is None:
+                header = file.readline().split(",")
+                header = remove_columns(header, REMOVED_COLUMNS)
+            else:
+                file.readline()
 
-        while True:
-            line = file.readline()
-            if not line:
-                break
+            while True:
+                line = file.readline()
+                if not line:
+                    break
 
-            line = line.replace('\"', '')
-            record = line.split(',')
+                record = line.split(',')
+                record = [entry.strip() for entry in record]
 
-            if passesFilters(record):
-                processedRecords.append(removeColumns(record, REMOVED_COLUMNS))
+                if passes_filters(record):
+                    processedRecords.append(remove_columns(record, REMOVED_COLUMNS))
 
     with open('output.csv', 'w') as file:
-        file.write(recordToCSV(header))
+        file.write(record_to_CSV(header))
         for record in processedRecords:
-            file.write(recordToCSV(record))
+            file.write(record_to_CSV(record))
 
 
-def passesFilters(record):
-    return filterByCountry(record) and filterByMonth(record) and filterByElement(record)
+def passes_filters(record):
+    return filter_by_station(record)
 
 
-# Filter for countries that are not neighbours of Romania
-def filterByCountry(record):
-    return record[1] in COUNTRIES
-
-# Filter for rows that have more than one month in this field
-def filterByMonth(record):
-    return record[3] in MONTHS
-
-
-# Filter for rows that don't contain 'Temperature change' values
-def filterByElement(record):
-    return record[5] == "Temperature change"
+# Filter for a single meteo station
+def filter_by_station(record):
+    return record[0] == '15346'
 
 
 # Remove irrelevant columns
-#   - 'code' columns
-#   - 'Element' column, because it is always 'Temperature change'
-def removeColumns(record, columns):
+def remove_columns(record, columns):
     for column in sorted(columns, reverse=True):
         del record[column]
     return record
 
 
-def recordToCSV(record):
-    return ','.join(record)
+def record_to_CSV(record):
+    return ','.join(record) + '\n'
 
 
 if __name__ == '__main__':
