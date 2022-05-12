@@ -2,12 +2,11 @@ from src.model import TemperatureModel
 import torch.nn as nn
 import torch
 import numpy
-import torch.utils.data as data_utils
 
 from src.util import read_training_data
 
-NUM_EPOCHS = 200
-BATCH_SIZE = 32
+NUM_EPOCHS = 3000
+BATCH_SIZE = 128
 LEARNING_RATE = 1e-3
 
 if __name__ == "__main__":
@@ -43,7 +42,7 @@ if __name__ == "__main__":
             epoch_losses.append(loss.item())
         mean_loss = torch.mean(torch.Tensor(epoch_losses))
 
-        checkpoint_name = f'epoch{epoch}_batchSize{BATCH_SIZE}'
+        checkpoint_name = f'epoch{epoch}_batchSize{BATCH_SIZE}_8layers_noOutputReLU'
         with open('losses.txt', 'a') as f:
             f.write(f'Model: {checkpoint_name} - LOSS: {mean_loss}\n')
         print(f'Epoch: {epoch} Loss: {mean_loss.item()}')

@@ -4,14 +4,14 @@ import matplotlib.pyplot as plt
 from src.model import TemperatureModel
 from src.util import read_training_data
 
-BATCH_SIZE = 32
+BATCH_SIZE = 128
 
 
 def load_models(epochs):
     models = []
     for epoch in epochs:
         model = TemperatureModel()
-        model.load_state_dict(torch.load(f'../saved_models/epoch{epoch}_batchSize{BATCH_SIZE}.pt'))
+        model.load_state_dict(torch.load(f'../saved_models/epoch{epoch}_batchSize{BATCH_SIZE}_8layers_noOutputReLU.pt'))
         model.eval()
 
         models.append(model)
@@ -22,7 +22,7 @@ def load_models(epochs):
 if __name__ == '__main__':
     # epochs = [0, 25, 50, 75, 100, 200, 300, 500, 700, 900]
     # epochs = [0, 25, 50, 75, 100, 125, 150, 175, 199]
-    epochs = [86]
+    epochs = [2991]
     legend = ['actual data'] + [f'{epoch} epochs' for epoch in epochs]
     models = load_models(epochs)
 
@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
     for index in range(inputs.size()[0]):
         entry = inputs[index]
-        if entry[0] == 1970:
+        if entry[0] == 1970 - 1961:
             filtered_in.append(entry)
             filtered_out.append(expected_outputs[index])
 

@@ -52,6 +52,9 @@ def read_training_data():
             record = line.split(',')
 
             year, month, day = extract_date(record[0])
+
+            year -= 1961
+
             med_temp = float(record[1])
 
             input_tensor = torch.tensor([year, month, day])
