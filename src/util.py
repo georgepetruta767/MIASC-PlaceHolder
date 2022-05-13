@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import torch
 
 
@@ -32,9 +34,15 @@ def encode(elem, collection):
     return out
 
 
-def extract_date(date_str):
+def extract_date(date_str, data_type=float):
     split_date = date_str.split('/')
-    return float(split_date[0]), float(split_date[1]), float(split_date[2])
+    return data_type(split_date[0]), data_type(split_date[1]), data_type(split_date[2])
+
+
+def date_range(start, end):
+    delta = end - start
+    days = [start + timedelta(days=i) for i in range(delta.days + 1)]
+    return days
 
 
 def read_training_data():
