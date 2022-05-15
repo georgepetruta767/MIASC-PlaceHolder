@@ -1,0 +1,27 @@
+<form *ngIf="form" [formGroup]="form" class="pt-4 mx-auto wrapper" (ngSubmit)="onSubmit()">
+  <div class="form-group p-2">
+    <label>Start Date*</label>
+    <input formControlName="startDate" type="date" class="form-control" placeholder="Start Date">
+    <span class="text-danger" *ngIf="submitted && form.controls.startDate.errors"> Field is required </span>
+  </div>
+  <div class="form-group p-2">
+    <label>End Date</label>
+    <input formControlName="endDate" type="date" class="form-control" placeholder="End Date">
+    <small id="emailHelp" class="form-text text-muted">Setting an end date is not mandatory, but as a result, your chart will only show result for the date you set for start date</small>
+  </div>
+  <button type="submit" class="ms-1 btn btn-primary">Show results</button>
+</form>
+
+<!--
+<div>
+  <div style="display: block">
+    <canvas baseChart
+            [datasets]="barChartData"
+            [labels]="barChartLabels"
+            [options]="barChartOptions"
+            [legend]="barChartLegend"
+            [chartType]="barChartType">
+    </canvas>
+  </div>
+</div>
+-->
