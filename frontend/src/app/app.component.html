@@ -12,16 +12,5 @@
   <button type="submit" class="ms-1 btn btn-primary">Show results</button>
 </form>
 
-<!--
-<div>
-  <div style="display: block">
-    <canvas baseChart
-            [datasets]="barChartData"
-            [labels]="barChartLabels"
-            [options]="barChartOptions"
-            [legend]="barChartLegend"
-            [chartType]="barChartType">
-    </canvas>
-  </div>
-</div>
--->
+<div echarts [options]="chartOption" class="demo-chart"></div>
+

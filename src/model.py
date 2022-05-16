@@ -1,7 +1,7 @@
 import torch.nn as nn
 
 INPUT_DIM = 3
-OUTPUT_DIM = 1
+OUTPUT_DIM = 3
 
 # D1 = 80
 # D2 = 70

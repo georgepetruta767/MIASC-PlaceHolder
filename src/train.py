@@ -12,7 +12,7 @@ LEARNING_RATE = 1e-3
 if __name__ == "__main__":
     inputs, expected_outputs = read_training_data()
     inputs = inputs.cuda()
-    expected_outputs = expected_outputs.cuda().reshape(-1, 1)
+    expected_outputs = expected_outputs.cuda()
 
     model = TemperatureModel().cuda()
 
@@ -42,7 +42,7 @@ if __name__ == "__main__":
             epoch_losses.append(loss.item())
         mean_loss = torch.mean(torch.Tensor(epoch_losses))
 
-        checkpoint_name = f'epoch{epoch}_batchSize{BATCH_SIZE}_8layers_noOutputReLU'
+        checkpoint_name = f'epoch{epoch}_batchSize{BATCH_SIZE}_8layers_noOutputReLU_3channels'
         with open('losses.txt', 'a') as f:
             f.write(f'Model: {checkpoint_name} - LOSS: {mean_loss}\n')
         print(f'Epoch: {epoch} Loss: {mean_loss.item()}')

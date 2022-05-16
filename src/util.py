@@ -64,9 +64,11 @@ def read_training_data():
             year -= 1961
 
             med_temp = float(record[1])
+            max_temp = float(record[2])
+            min_temp = float(record[3])
 
             input_tensor = torch.tensor([year, month, day])
-            output_tensor = torch.tensor([med_temp])
+            output_tensor = torch.tensor([med_temp, max_temp, min_temp])
             if training_input_data is None:
                 training_input_data = input_tensor
             else:
@@ -76,4 +78,4 @@ def read_training_data():
             else:
                 training_output_data = torch.cat((training_output_data, output_tensor))
 
-    return training_input_data.reshape(-1, 3), training_output_data
+    return training_input_data.reshape(-1, 3), training_output_data.reshape(-1, 3)

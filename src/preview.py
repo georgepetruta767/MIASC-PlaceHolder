@@ -11,7 +11,7 @@ def load_models(epochs):
     models = []
     for epoch in epochs:
         model = TemperatureModel()
-        model.load_state_dict(torch.load(f'../saved_models/epoch{epoch}_batchSize{BATCH_SIZE}_8layers_noOutputReLU.pt'))
+        model.load_state_dict(torch.load(f'../best_models/epoch{epoch}_batchSize{BATCH_SIZE}_8layers_noOutputReLU_3channels.pt'))
         model.eval()
 
         models.append(model)
@@ -22,8 +22,8 @@ def load_models(epochs):
 if __name__ == '__main__':
     # epochs = [0, 25, 50, 75, 100, 200, 300, 500, 700, 900]
     # epochs = [0, 25, 50, 75, 100, 125, 150, 175, 199]
-    epochs = [2991]
-    legend = ['actual data'] + [f'{epoch} epochs' for epoch in epochs]
+    epochs = [2997]
+    legend = ['actual med', 'actual max', 'actual min', 'predicted med', 'predicted max', 'predicted min'] #+ [f'{epoch} epochs' for epoch in epochs]
     models = load_models(epochs)
 
     inputs, expected_outputs = read_training_data()
@@ -40,12 +40,15 @@ if __name__ == '__main__':
 
     x_axis = torch.linspace(1, 12, filtered_in.size()[0])
 
-    plt.plot(x_axis, filtered_out)
+    plt.plot(x_axis, filtered_out[:, 0])
+    plt.plot(x_axis, filtered_out[:, 1])
+    plt.plot(x_axis, filtered_out[:, 2])
 
     for model in models:
         output = model(filtered_in).detach()
-        # output = denormalize_temp(output, min_temp, max_temp)
-        plt.plot(x_axis, output)
+        plt.plot(x_axis, output[:, 0])
+        plt.plot(x_axis, output[:, 1])
+        plt.plot(x_axis, output[:, 2])
 
     plt.legend(legend)
     plt.show()
