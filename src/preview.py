@@ -23,7 +23,10 @@ if __name__ == '__main__':
     # epochs = [0, 25, 50, 75, 100, 200, 300, 500, 700, 900]
     # epochs = [0, 25, 50, 75, 100, 125, 150, 175, 199]
     epochs = [2997]
-    legend = ['actual med', 'actual max', 'actual min', 'predicted med', 'predicted max', 'predicted min'] #+ [f'{epoch} epochs' for epoch in epochs]
+    legend_med = ['actual med', 'predicted med']
+    legend_max = ['actual max', 'predicted max']
+    legend_min = ['actual min', 'predicted min']
+    legend = ['actual data', 'predicted data']
     models = load_models(epochs)
 
     inputs, expected_outputs = read_training_data()
@@ -40,15 +43,28 @@ if __name__ == '__main__':
 
     x_axis = torch.linspace(1, 12, filtered_in.size()[0])
 
-    plt.plot(x_axis, filtered_out[:, 0])
-    plt.plot(x_axis, filtered_out[:, 1])
-    plt.plot(x_axis, filtered_out[:, 2])
+    f, (ax1, ax2, ax3) = plt.subplots(3, 1)
+
+    ax1.plot
+
+    ax1.set_title("Median Temperature")
+    ax2.set_title("Maximum Temperature")
+    ax3.set_title("Minimum Temperature")
+
+    f.legend(legend)
+    # ax1.legend(legend_med)
+    # ax2.legend(legend_max)
+    # ax3.legend(legend_min)
+
+    ax1.plot(x_axis, filtered_out[:, 0])
+    ax2.plot(x_axis, filtered_out[:, 1])
+    ax3.plot(x_axis, filtered_out[:, 2])
 
     for model in models:
         output = model(filtered_in).detach()
-        plt.plot(x_axis, output[:, 0])
-        plt.plot(x_axis, output[:, 1])
-        plt.plot(x_axis, output[:, 2])
+        ax1.plot(x_axis, output[:, 0])
+        ax2.plot(x_axis, output[:, 1])
+        ax3.plot(x_axis, output[:, 2])
 
     plt.legend(legend)
     plt.show()

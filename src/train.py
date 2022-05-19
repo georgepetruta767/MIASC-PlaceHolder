@@ -1,18 +1,31 @@
+from torch.utils.data import DataLoader, Dataset, SubsetRandomSampler
+
+from src.dataset import TemperatureDataset
 from src.model import TemperatureModel
 import torch.nn as nn
 import torch
 import numpy
 
-from src.util import read_training_data
 
 NUM_EPOCHS = 3000
 BATCH_SIZE = 128
 LEARNING_RATE = 1e-3
+VALIDATION_SPLIT = .2
 
 if __name__ == "__main__":
-    inputs, expected_outputs = read_training_data()
-    inputs = inputs.cuda()
-    expected_outputs = expected_outputs.cuda()
+    dataset = TemperatureDataset()
+    dataset_size = len(dataset)
+    indices = list(range(dataset_size))
+    split = int(numpy.floor(VALIDATION_SPLIT * dataset_size))
+    numpy.random.shuffle(indices)
+
+    train_indices, validation_indices = indices[split:], indices[:split]
+
+    train_sampler = SubsetRandomSampler(train_indices)
+    validation_sampler = SubsetRandomSampler(validation_indices)
+
+    train_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=train_sampler)
+    validation_loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=validation_sampler)
 
     model = TemperatureModel().cuda()
 
@@ -20,17 +33,9 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam(model.parameters())
     model.train()
 
-    batch_count = inputs.size()[0] // BATCH_SIZE
-
     for epoch in range(NUM_EPOCHS):
-        perm = numpy.random.permutation(inputs.size()[0])
-        shuffled_input = inputs[perm]
-        shuffled_output = expected_outputs[perm]
-        epoch_losses = []
-        for batch_num in range(batch_count):
-            input = shuffled_input[batch_num * BATCH_SIZE: (batch_num + 1) * BATCH_SIZE]
-            expected_output = shuffled_output[batch_num * BATCH_SIZE: (batch_num + 1) * BATCH_SIZE]
-
+        training_losses, validation_losses = [], []
+        for batch_num, (input, expected_output) in enumerate(train_loader):
             optimizer.zero_grad()
 
             output = model(input)
@@ -39,12 +44,20 @@ if __name__ == "__main__":
             loss.backward()
             optimizer.step()
 
-            epoch_losses.append(loss.item())
-        mean_loss = torch.mean(torch.Tensor(epoch_losses))
+            training_losses.append(loss.item())
 
-        checkpoint_name = f'epoch{epoch}_batchSize{BATCH_SIZE}_8layers_noOutputReLU_3channels'
+        for batch_num, (input, expected_output) in enumerate(validation_loader):
+            output = model(input)
+            loss = error(output, expected_output)
+
+            validation_losses.append(loss.item())
+
+        training_loss = torch.mean(torch.Tensor(training_losses))
+        validation_loss = torch.mean(torch.Tensor(validation_losses))
+
+        checkpoint_name = f'epoch{epoch}_withMetrics'
         with open('losses.txt', 'a') as f:
-            f.write(f'Model: {checkpoint_name} - LOSS: {mean_loss}\n')
-        print(f'Epoch: {epoch} Loss: {mean_loss.item()}')
+            f.write(f'Model: {checkpoint_name} - TRAINING_LOSS: {training_loss} - VALIDATION_LOSS: {validation_loss}\n')
+        print(f'Epoch: {epoch} Training Loss: {training_loss.item()} Validation Loss {validation_loss.item()}')
 
         torch.save(model.state_dict(), f'..\\saved_models\\{checkpoint_name}.pt')
